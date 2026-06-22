@@ -2,76 +2,56 @@
 ---
 
 ### 💡 Fitur Utama
+**1. Multi-Role Auth**  
+Klien login no telp tanpa password. Staff login nama/telp + password.
 
-**1. Multi-Role Authentication**  
-Klien login cukup nomor telp tanpa password. Staff login pake nama/telp + password. Session beda.
-
-**2. Alur Operasional 4 Tahap**  
-`Klien Upload Berkas` → `Admin Verifikasi` → `Kuasa Hukum Validasi` → `Keuangan Terbit Invoice` → `Klien Bayar`
+**2. Workflow 4 Tahap**  
+`Klien Upload` → `Admin Verif` → `Kuasa Hukum Validasi` → `Keuangan Invoice` → `Klien Bayar`
 
 **3. Manajemen Perkara**  
-CRUD data perkara, upload berkas PDF/DOCX/JPG, filter otomatis: klien cuma liat perkara miliknya + hide data "Pendaftaran Akun Baru".
+CRUD + upload berkas PDF/DOCX/JPG + filter klien auto hide "Pendaftaran Akun".
 
 **4. Modul Keuangan**  
-Pengajuan dana operasional, approval pimpinan, terbit invoice, klien upload bukti transfer, verifikasi lunas.
+Pengajuan dana, approval pimpinan, invoice, upload bukti transfer.
 
-**5. Dashboard Role-Based**  
-Admin: summary perkara, staff, surat.  
-Keuangan: pending invoice, total pembayaran.  
-Pimpinan: KPI perkara proses/selesai, total pendapatan.  
-Klien: status perkara + notif tagihan.
+**5. Dashboard KPI**  
+Admin/Keuangan/Pimpinan/Klien beda tampilan + data real-time.
 
-**6. Cetak PDF Laporan**  
-Generate PDF laporan perkara pake TCPDF library. Bisa dipake buat arsip.
+**6. Cetak PDF TCPDF**  
+Generate laporan perkara jadi PDF A4. Library TCPDF download manual.
 
-**7. Jadwal Sidang**  
-Input tanggal sidang + agenda + hasil sidang. Format datetime auto convert ke MySQL DATETIME.
+**7. Timezone WIB**  
+Jam masuk `Asia/Jakarta`, input datetime auto convert ke MySQL DATETIME.
 
 ---
 
-### ⚙️ Cara Install & Jalanin
+### ⚙️ Cara Install 5 Menit
+**1. Download Library**  
+Download CI3 + TCPDF sesuai petunjuk di atas. Taruh di folder yg bener.
 
-**1. Database**  
-Import file `db_hukum.sql` ke phpMyAdmin/MySQL.  
-DB name default: `db_hukum`
+**2. Database**  
+Import `db_hukum.sql` ke phpMyAdmin.  
+DB name: `db_hukum`
 
-**2. Setting Koneksi**  
-Copy `application/config/database.example.php` → rename jadi `database.php`  
-Isi: username, password, nama database kamu
+**3. Setting Koneksi**  
+Copy `database.example.php` → `database.php`  
+Isi host, user, pass, nama DB kamu
 
-**3. Folder Upload**  
-Bikin folder manual:  
-`/uploads/perkara/` dan `/uploads/pembayaran/`  
-Kasih permission 777 biar bisa upload
+**4. Folder Upload**  
+Bikin `/uploads/perkara/` dan `/uploads/pembayaran/` → permission 777
 
-**4. Akses**  
+**5. Jalanin**  
 Buka: `http://localhost/SIM-Kantor-advokat/auth`
 
 ---
 
-### 📝 Catatan Penting
-
-1. **Folder `system/` tidak diupload** ke GitHub karena size besar.  
-   Download CodeIgniter 3.1.11 manual di [codeigniter.com](https://codeigniter.com/) terus ekstrak ke root project.
-
-2. **FontAwesome pake CDN** biar ringan. Kalo mau offline, download webfonts dari fontawesome.com
-
-3. **Bootstrap pake CDN**. Kalo offline, download di [getbootstrap.com](https://getbootstrap.com/)
-
-4. **Security Note:** Password MD5 cuma buat demo tugas akhir. Real project wajib pake `password_hash()` + `password_verify()`.
-
-5. **Timezone:** Udah diset `Asia/Jakarta` di controller biar jam masuk akurat WIB.
-
----
-
-### 🎯 Teknologi & Library
-- **Backend:** CodeIgniter 3.1.11 MVC
-- **Frontend:** Bootstrap 5 + FontAwesome 6
-- **Database:** MySQL / MariaDB 
-- **PDF:** TCPDF Library
-- **AI:** Google AI Assistant Chatbot API
+### 📝 Catatan Developer
+1. **Folder `system/` + `tcpdf/` tidak diupload** karena size >20MB. HRD clone jadi cepet.
+2. **Password MD5** = khusus demo tugas akhir. Produksi wajib `password_hash()`.
+3. **Timezone** udah diset `Asia/Jakarta` di controller.
+4. **File .gitkeep** dipake biar folder `uploads/` muncul di GitHub walau kosong.
 
 ---
 
 Dibuat untuk Tugas Akhir Sistem Informasi.  
-Repo ini nunjukin implementasi CI3 real-world: multi-role, workflow, upload file, dan role-based dashboard.
+Implementasi CI3 real-world: multi-role, workflow, upload file, role-based dashboard, generate PDF.
