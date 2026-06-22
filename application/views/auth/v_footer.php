@@ -12,8 +12,11 @@ Dipanggil di: Semua view via $this->_render()
 
 <!-- Load jQuery + Bootstrap JS dari folder assets -->
 <!-- JQuery wajib duluan baru Bootstrap, urutan ga boleh kebalik -->
-<script src="<?php echo base_url('assets/js/jquery.min.js'); ?>"></script>
-<script src="<?php echo base_url('assets/js/bootstrap.bundle.min.js'); ?>"></script>
+<!-- jQuery 3.7.1 CDN resmi dari Google -->
+<script src="https://googleapis.com"></script>
+<!-- Bootstrap 5 JS Bundle CDN -->
+<script src="https://jsdelivr.net"></script>
+
 
 <?php 
 /**
