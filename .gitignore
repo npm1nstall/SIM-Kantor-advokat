@@ -1,0 +1,21 @@
+# === FOLDER GA PERLU DIUPLOAD ===
+/vendor/
+/system/cache/
+/application/cache/
+/application/logs/
+
+# === FILE SENSITIF - JANGAN KELEAK ===
+application/config/database.php
+application/config.php
+.env
+*.env
+
+# === FILE UPLOAD USER ===
+/uploads/
+/public/uploads/
+
+# === FILE SAMPAH OS ===
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
