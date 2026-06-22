@@ -14,11 +14,12 @@
 
     -->
     
-    <!-- Load Bootstrap 5 CSS dari folder assets -->
-    <link rel="stylesheet" href="<?php echo base_url('assets/css/bootstrap.min.css'); ?>">
-    
-    <!-- Load FontAwesome 6 Icons buat icon menu, button, dll -->
-    <link rel="stylesheet" href="<?php echo base_url('assets/fontawesome/css/all.min.css');?>">
+ <!-- FontAwesome 6 CDN (Icon) -->
+<link rel="stylesheet" href="https://cloudflare.com">
+
+<!-- Bootstrap 5 CSS CDN -->
+<link href="https://jsdelivr.net" rel="stylesheet">
+
     
     <!-- Load CSS custom kamu. ?v=2.0 buat force refresh cache browser -->
     <link rel="stylesheet" href="<?php echo base_url('assets/css/style.css?v=2.0');?>">
