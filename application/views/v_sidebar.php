@@ -20,11 +20,11 @@ $is_klien = ($this->session->userdata('klien_logged_in') == TRUE);
 
     <!-- ================= MENU DASHBOARD ================= -->
     <?php if ($is_klien): ?>
-        <!-- KLIEN: Dashboard langsung ke daftar perkara miliknya -->
-        <a href="<?= base_url('perkara'); ?>" 
-           class="list-group-item bg-transparent text-white fw-medium border-0">
-            <i class="fas fa-th-large me-3"></i> Dashboard Klien
-        </a>
+    <!-- KLIEN: Dashboard = halaman greeting ringkas -->
+    <a href="<?= base_url('dashboard'); ?>" 
+       class="list-group-item bg-transparent text-white fw-medium border-0">
+        <i class="fas fa-th-large me-3"></i> Dashboard Klien
+    </a>
 
     <?php elseif ($jabatan == 'Keuangan'): ?>
         <!-- KEUANGAN: Dashboard khusus modul keuangan biar angka summary sinkron -->
