@@ -39,94 +39,92 @@ class Dashboard extends CI_Controller {
      * Dashboard Utama - Auto detect role
      * URL: /dashboard
      */
-    public function index() {
-        // === 1. JALUR KLIEN ===
-        if ($this->session->userdata('klien_logged_in')) {
-            $telp = $this->session->userdata('telp_klien');
+    public function index() 
+	{
+		// === 1. JALUR KLIEN ===
+		if ($this->session->userdata('klien_logged_in')) {
+			$telp = $this->session->userdata('telp_klien');
 
-            // Ambil data perkara milik klien ini
-            $data['perkara'] = $this->db->get_where('PERKARA', ['TELP_KLIEN' => $telp])->row_array();
+			// Ambil data perkara aktif milik klien ini
+			$data['perkara'] = $this->db->get_where('PERKARA', ['TELP_KLIEN' => $telp])->row_array();
 
-            // Hitung notif tagihan belum bayar
-            $data['notif_bayar'] = $this->M_keuangan->count_tagihan_belum_bayar($telp);
+			// Hitung notif tagihan belum bayar
+			$data['notif_bayar'] = $this->M_keuangan->count_tagihan_belum_bayar($telp);
+			
+			// YANG BENER PAKE TABEL KEUANGAN
+			$keuangan = $this->db->select('STATUS_BAYAR_KLIEN')
+				->where('TELP_STAFF', $telp) // TELP_STAFF isi telp klien juga kan?
+				->or_where('NO_PERKARA', $data['perkara']['NO_PERKARA']) // fallback pake no perkara
+				->order_by('NO_TRANSAKSI', 'DESC') // ambil transaksi terbaru
+				->limit(1)
+				->get('KEUANGAN')
+				->row_array();
 
-            // Kalo data perkara kosong, kasih default biar view ga error
-            if (!$data['perkara']) {
-                $data['perkara'] = [
-                    'NO_PERKARA'      => '-',
-                    'JUDUL_PERKARA'   => 'Data tidak ditemukan',
-                    'STATUS_PERKARA'  => '-'
-                ];
-            }
+			$data['perkara']['STATUS_BAYAR_KLIEN'] = $keuangan['STATUS_BAYAR_KLIEN'] ?? 'Belum ada data';
 
-            $this->_render('klien/v_dashboard', $data);
-            return;
-        }
+			// Kalo data perkara kosong, kasih default biar view ga error
+			if (!$data['perkara']) {
+				$data['perkara'] = [
+					'NO_PERKARA'          => '-',
+					'JUDUL_PERKARA'       => 'Belum ada perkara aktif',
+					'AGENDA_SIDANG'       => null,
+					'STATUS_PERKARA'      => '-',
+					'STATUS_BAYAR_KLIEN'  => 'Belum ada data',
+					'CATATAN_DISPOSISI'   => null
+				];
+			}
 
-        // === 2. JALUR STAFF INTERNAL ===
-        $jabatan = $this->session->userdata('jabatan');
-        $data['title'] = 'Dashboard';
-        
-        // Load model perkara buat ambil data antrean
-        $this->load->model('M_perkara');
+			$this->_render('klien/v_dashboard', $data);
+			return;
+		}
 
-        // SWITCH BERDASARKAN JABATAN
-        switch ($jabatan) {
+		// === 2. JALUR STAFF INTERNAL ===
+		$jabatan = $this->session->userdata('jabatan');
+		$data['title'] = 'Dashboard';
+		
+		$this->load->model('M_perkara');
 
-            case 'Admin':
-                // Hitung data real-time buat card summary
-                $data['jml_perkara'] = $this->db->count_all('PERKARA');
-                $data['jml_surat']   = $this->db->count_all('SURAT');
-                $data['jml_staff']   = $this->db->count_all('KARYAWAN');
-                
-                // Hitung sidang mendatang
-                $data['jml_sidang']  = $this->db->where('TGL_SIDANG >=', date('Y-m-d H:i:s'))->count_all_results('PERKARA');
+		switch ($jabatan) {
+			case 'Admin':
+				$data['jml_perkara'] = $this->db->count_all('PERKARA');
+				$data['jml_surat']   = $this->db->count_all('SURAT');
+				$data['jml_staff']   = $this->db->count_all('KARYAWAN');
+				$data['jml_sidang']  = $this->db->where('TGL_SIDANG >=', date('Y-m-d H:i:s'))->count_all_results('PERKARA');
+				$data['pengajuan']   = $this->M_perkara->get_antrean_admin();
+				$this->_render('dashboard/admin/v_index', $data);
+				break;
 
-                // Ambil antrean pendaftaran yg butuh diproses admin
-                $data['pengajuan']   = $this->M_perkara->get_antrean_admin();
+			case 'Keuangan':
+				$data['jml_pending']   = $this->db->where('STATUS_VERIFIKASI_OPS', 'Pending Pimpinan')->count_all_results('KEUANGAN');
+				$data['jml_disetujui'] = $this->db->where('STATUS_VERIFIKASI_OPS', 'Pending Keuangan')->count_all_results('KEUANGAN');
+				$data['jml_total']     = $this->db->count_all('KEUANGAN');
+				
+				$data['pengajuan'] = $this->db
+					->select('KEUANGAN.*, PERKARA.JUDUL_PERKARA')
+					->from('KEUANGAN')
+					->join('PERKARA', 'PERKARA.NO_PERKARA = KEUANGAN.NO_PERKARA', 'left')
+					->where('KEUANGAN.JMLH_PENGAJUAN_OPS >', 0) 
+					->get()
+					->result();
+				$this->_render('dashboard/keuangan/v_index', $data);
+				break;
 
-                $this->_render('dashboard/admin/v_index', $data);
-                break;
+			case 'Pimpinan':
+				redirect('dashboard/pimpinan');
+				break;
 
-            case 'Keuangan':
-                // Hitung status keuangan
-                $data['jml_pending']   = $this->db->where('STATUS_VERIFIKASI_OPS', 'Pending Pimpinan')->count_all_results('KEUANGAN');
-                $data['jml_disetujui'] = $this->db->where('STATUS_VERIFIKASI_OPS', 'Pending Keuangan')->count_all_results('KEUANGAN');
-                $data['jml_total']     = $this->db->count_all('KEUANGAN');
-                
-                $this->load->model('M_perkara');
-                
-                // Ambil data pengajuan ops + join ke perkara
-                $data['pengajuan'] = $this->db
-                    ->select('KEUANGAN.*, PERKARA.JUDUL_PERKARA')
-                    ->from('KEUANGAN')
-                    ->join('PERKARA', 'PERKARA.NO_PERKARA = KEUANGAN.NO_PERKARA', 'left')
-                    ->where('KEUANGAN.JMLH_PENGAJUAN_OPS >', 0) 
-                    ->get()
-                    ->result();
+			case 'Kuasa Hukum':
+				$data['jml_perkara'] = $this->db->count_all('PERKARA');
+				$data['jml_sidang']  = $this->db->where('TGL_SIDANG >=', date('Y-m-d H:i:s'))->count_all_results('PERKARA');
+				$data['pengajuan']   = $this->M_perkara->get_antrean_kuasa_hukum();
+				$this->_render('dashboard/kuasa_hukum/v_index', $data);
+				break;
 
-                $this->_render('dashboard/keuangan/v_index', $data);
-                break;
-
-            case 'Pimpinan':
-                // Pimpinan punya dashboard khusus
-                redirect('dashboard/pimpinan');
-                break;
-
-            case 'Kuasa Hukum':
-                // Data dinamis buat kuasa hukum
-                $data['jml_perkara'] = $this->db->count_all('PERKARA');
-                $data['jml_sidang']  = $this->db->where('TGL_SIDANG >=', date('Y-m-d H:i:s'))->count_all_results('PERKARA');
-                $data['pengajuan']   = $this->M_perkara->get_antrean_kuasa_hukum();
-                
-                $this->_render('dashboard/kuasa_hukum/v_index', $data);
-                break;
-
-            default:
-                show_404();
-                break;
-        }
-    }
+			default:
+				show_404();
+				break;
+		}
+	}
 
     // ================= MODUL SDM - ADMIN ONLY =================
 
